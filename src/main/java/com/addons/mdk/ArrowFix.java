@@ -8,6 +8,8 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
 
 @Mod(modid = "arrowfix", useMetadata=true)
 public class ArrowFix {
@@ -49,13 +51,18 @@ public class ArrowFix {
     }
 
     public static boolean isShortbow(ItemStack item) {
-        if(item != null) {
-            String sbid = getSkyBlockID(item);
-            if(sbid.equals("null")) {
-                return false;
-            }
-            return sbid.contains("TERMINATOR") || sbid.contains("MOSQUITO_BOW") || sbid.contains("SHORTBOW") || sbid.contains("MACHINE_GUN_BOW") || sbid.contains("ITEM_SPIRIT_BOW");
+        if (item == null || !item.hasTagCompound()) return false;
+
+        NBTTagCompound display = item.getTagCompound().getCompoundTag("display");
+        if (!display.hasKey("Lore", Constants.NBT.TAG_LIST)) return false;
+
+        NBTTagList loreNBT = display.getTagList("Lore", Constants.NBT.TAG_STRING);
+
+        for (int i = 0; i < loreNBT.tagCount(); i++) {
+            String line = loreNBT.getStringTagAt(i);
+            if (line.contains("Shortbow: Instantly shoots!")) return true;
         }
+
         return false;
     }
 }
