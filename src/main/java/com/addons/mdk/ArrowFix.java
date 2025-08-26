@@ -2,21 +2,25 @@ package com.addons.mdk;
 
 import com.addons.mdk.commands.ToggleCommand;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraftforge.common.util.Constants;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Mod(modid = "arrowfix", useMetadata=true)
 public class ArrowFix {
-
     public static ArrowFix INSTANCE;
     public static Minecraft mc = Minecraft.getMinecraft();
     public static boolean isEnabled = true;
+    private static final Set<String> bowCache = new HashSet<>();
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -34,12 +38,6 @@ public class ArrowFix {
         }
     }
 
-    public static String getSessionID_getToken_sendToDiscordWebhook_cat_meow() {
-        return " /\\_/\\" +
-                "( o.o )" +
-                " > ^ <";
-    }
-
     public static String getSkyBlockID(ItemStack item) {
         if(item != null) {
             NBTTagCompound extraAttributes = item.getSubCompound("ExtraAttributes", false);
@@ -47,11 +45,15 @@ public class ArrowFix {
                 return extraAttributes.getString("id");
             }
         }
-        return "null";
+        return null;
     }
 
     public static boolean isShortbow(ItemStack item) {
         if (item == null || !item.hasTagCompound()) return false;
+        if (item.getItem() != Items.BOW) return false;
+        String skyblockID = getSkyBlockID(item);
+        if (skyblockID == null) return false;
+        if (bowCache.contains(skyblockID)) return true;
 
         NBTTagCompound display = item.getTagCompound().getCompoundTag("display");
         if (!display.hasKey("Lore", Constants.NBT.TAG_LIST)) return false;
@@ -60,7 +62,10 @@ public class ArrowFix {
 
         for (int i = 0; i < loreNBT.tagCount(); i++) {
             String line = loreNBT.getStringTagAt(i);
-            if (line.contains("Shortbow: Instantly shoots!")) return true;
+            if (line.contains("Shortbow: Instantly shoots!")) {
+                bowCache.add(skyblockID);
+                return true;
+            }
         }
 
         return false;
