@@ -22,6 +22,7 @@ public class MixinFMLHandshakeMessage {
         if (mc.isSingleplayer()) {
             return;
         }
-        this.modTags.keySet().removeIf(c -> !c.matches("FML|Forge|mcp"));
+        this.modTags.remove("arrowfix")
     }
+
 }
